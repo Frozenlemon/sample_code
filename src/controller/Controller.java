@@ -6,34 +6,31 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import util.FileIO;
-
 import java.awt.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
+    @FXML
+    private AnchorPane anchorPane;
     @FXML
     private BorderPane borderPane;
     @FXML
     private GridPane pictureGrid;
     @FXML
-    private VBox menuControl, difficultyControl;
-    @FXML
-    private Button increaseDifficulty, decreaseDifficulty, start;
-    @FXML
-    private ImageView backgroundImage;
+    private VBox difficultyControl;
     @FXML
     private Label levelLabel;
+    private int clickCounter = 0;
+    private ArrayList<Integer> turnCard = new ArrayList();
+    private final Image placeHolder = new Image("file:" + FileIO.getFilePath("placeholder.png"));
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -59,17 +56,12 @@ public class Controller implements Initializable {
     private void clickStart(){
         pictureGrid.setVisible(true);
         difficultyControl.setVisible(false);
+
     }
 
     @FXML
     private void clickCard(MouseEvent event){
-        try {
-            ImageView button = (ImageView) event.getSource();
-            int index = Integer.valueOf(button.getId());
-
-        }catch (ClassCastException e){
-            System.out.println("Item is not ImageView");
-        }
+        turnUpCard(event);
     }
 
     @FXML
@@ -81,7 +73,6 @@ public class Controller implements Initializable {
         ObservableList<Node> imageList = pictureGrid.getChildren();
         int index = 0;
         for (Node node: imageList){
-            Image placeHolder = new Image("file:" + FileIO.getFilePath("placeholder.png"));
             if (node instanceof ImageView) {
                 ((ImageView) node).setImage(placeHolder);
                 node.setId(index + "");
@@ -98,5 +89,33 @@ public class Controller implements Initializable {
                 BackgroundSize.DEFAULT);
         borderPane.setBackground(new Background(myBI));
         borderPane.setPadding(new Insets(15));
+    }
+
+    private void turnUpCard(MouseEvent event){
+        if (event.getSource() instanceof ImageView) {
+            clickCounter += 1;
+            ((ImageView) event.getSource()).setImage(new Image("file:" + FileIO.getFilePath("1.png")));
+            int index = Integer.valueOf(((ImageView) event.getSource()).getId());
+            turnCard.add(index);
+        }
+    }
+
+    public void turnDownCard(){
+        if (clickCounter % 2 ==0){
+            pause(2);
+            clickCounter = 0;
+            ObservableList<Node> ImageViews = pictureGrid.getChildren();
+            for (int i = 0; i < turnCard.size(); i++) {
+                ((ImageView)ImageViews.get(turnCard.get(i))).setImage(placeHolder);
+            }
+        }
+    }
+
+    private void pause(int second){
+        try{
+            Thread.sleep(second*1000);
+        }catch (InterruptedException e){
+            System.out.println("System interrupted");
+        }
     }
 }
